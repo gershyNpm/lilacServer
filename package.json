@@ -1,6 +1,6 @@
 {
   "name": "@gershy/lilac-server",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Gershom Maes",
   "description": "TODO",
   "keywords": [
@@ -19,7 +19,7 @@
     "cmp"
   ],
   "devDependencies": {
-    "@gershy/entry": "^0.0.24",
+    "@gershy/entry": "^0.0.25",
     "@types/node": "^24.10.1"
   },
   "peerDependencies": {
@@ -34,5 +34,12 @@
       "import": "./cmp/esm/main.js",
       "require": "./cmp/cjs/main.js"
     }
+  },
+  "dependencies": {
+    "@aws-sdk/client-ecr": "^3.1105.0",
+    "@gershy/lilac-lambda-http": "^0.0.30",
+    "@gershy/pollen": "^0.0.5",
+    "@gershy/pollen-http": "^0.0.5",
+    "@gershy/util-phrasing": "^0.0.20"
   }
 }
