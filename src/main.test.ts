@@ -52,8 +52,6 @@ entry({ name: 'lilacServer', codec, inp: { reg: '^', effort: 0 }, fn: async (log
     
     { name: 'basic aws', fn: async (logger, inp) => isolated(async fact => {
       
-      if (1) return void logger.log({ $$: 'ZZZ skipperooni' });
-      
       if (!inp.aws) return void logger.log({ $$: 'skipped', aws: null });
       
       const garden = new Garden({

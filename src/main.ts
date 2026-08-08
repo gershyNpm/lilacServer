@@ -14,17 +14,14 @@ import { PollenHttp } from '@gershy/pollen-http';
 import type { HttpMethod } from '@gershy/util-http';
 
 // HEEERE1
-// - Big breakthrough - Flower.prototype.getFlowerId + Pollen.prototype.sanitizeDef are now abstract! Lots of resulting errorsszzzzzzzzz
-// - Fix state of pollen / serviceMap (and rename caller -> pollen; "pistil" / "stamen")
-//   - See pollen.ts - dump all existing callers inline, fix them up inline, then put them back in their places
-//   - Bring readme.caller.md up-to-date or delete it (but if not rename it "pollen")
 // - Note the global process symbol changed - it's a garden now, not just a service map!
 // - ServerCluster should write its bundle to `literal/serverCluster` following lambda's example
 // - Gershy unit for image builds (seems like docker is the only way)
 //   - Simply tag images with hash (same hashing strategy as lambda), and "latest"
 // - Test most basic ECR upload - grow a garden with ad-hoc terraform
 // - There's starting to be a lot of Z-Z-Zs floating around, pls handle
-// - Clear up docs
+// - Deleted lilac's readme.caller.md - should probably write a readme.pollen.md explaining how
+//   service map and flower id work together, are generated / consumed!
 
 type ClusterPollenFlyInp = never
   | { op: 'make' }
@@ -59,7 +56,7 @@ export class ClusterPollen extends Pollen<{ region: string, name: string, client
         if (region === (cl.inCls(reg, Function) ? await reg() : reg)) return this.stockClient;
       }
       
-      return new ECRClient({ region }); // TODO: ZZZ creds?? And what about other sanitizeDef creds - are they being passed correctly? Should they be in server map?????
+      return new ECRClient({ region }); // TODO: creds?? And what about other sanitizeDef creds - are they being passed correctly? Should they be in server map?????
       
     })();
     
@@ -70,6 +67,9 @@ export class ClusterPollen extends Pollen<{ region: string, name: string, client
   public async fly<Inp extends ClusterPollenFlyInp>(inp: Inp): Promise<ClusterPollenFlyOut<Inp>> {
     throw Error('script missing');
   }
+  
+  protected getJsfnHoist() { return `${import.meta.filename}::{${this.constructor.name}}` as const; }
+  protected getJsfnInp() { return {}; }
   
 };
 
@@ -146,6 +146,9 @@ export class ServerPollen extends Pollen<{ client: PollenHttp }> {
     throw Error('logic missing');
     
   }
+  
+  protected getJsfnHoist() { return `${import.meta.filename}::{${this.constructor.name}}` as const; }
+  protected getJsfnInp() { return { clusterId: this.clusterId }; }
   
 };
 
