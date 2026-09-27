@@ -7,10 +7,11 @@ const toArr: typeof cl.toArr = cl.toArr;
 const has:   typeof cl.has   = cl.has;
 const mod:   typeof cl.mod   = cl.mod;
 
-export const cmpAny  = Symbol('@gershy/test/cmp/any');
-export const cmpReg  = Symbol('@gershy/test/cmp/reg');
-export const cmpFn   = Symbol('@gershy/test/cmp/fn');
-export const cmpJson = Symbol('@gershy/test/cmp/json');
+export const cmpAny        = Symbol('@gershy/test/cmp/any');
+export const cmpReg        = Symbol('@gershy/test/cmp/reg');
+export const cmpJson       = Symbol('@gershy/test/cmp/json');
+export const cmpPartialObj = Symbol('@gershy/test/cmp/partialObj');
+export const cmpFn         = Symbol('@gershy/test/cmp/fn');
 
 export const equal = (v0: any, v1: any, path: (string | number)[] = []): { equal: true } | { equal: false, path: (string | number)[], [K: string]: any } => {
   
@@ -19,6 +20,28 @@ export const equal = (v0: any, v1: any, path: (string | number)[] = []): { equal
   
   // Process direct marker symbols
   if (v1 === cmpAny) return { equal: true };
+  
+  // Validate for string matching regex: `[ cmpReg, /must match th(is|at)/ ]`
+  if (v1[0] === cmpReg) {
+    
+    if (!isCls(v0, String)) return { equal: false, path, reason: 'nonstring', cls0: getCls(v0) };
+    
+    const reg = v1[1] as RegExp;
+    return reg.test(v0)
+      ? { equal: true }
+      : { equal: false, path, reason: 'regex', regex: `/${reg.source}/`, str: v0 };
+    
+  }
+  
+  if (v1[0] === cmpPartialObj) {
+    
+    if (!isCls(v0, Object)) return { equal: false, path, reason: 'nonobject', cls0: getCls(v0) };
+    
+    const p1 = v1[1] as Obj<any>;
+    const p0 = v0[cl.slice](p1[cl.toArr]((v, k) => k));
+    return equal(p0, p1, [ ...path, '<partial>' ]);
+    
+  }
   
   // Process tuples whose first item is a marker symbol
   if (v1[0] === cmpJson) {
@@ -34,18 +57,8 @@ export const equal = (v0: any, v1: any, path: (string | number)[] = []): { equal
     
   }
   
-  if (v1[0] === cmpReg) {
-    
-    if (!isCls(v0, String)) return { equal: false, path, reason: 'nonstring', cls0: getCls(v0) };
-    
-    const reg = v1[1] as RegExp;
-    return reg.test(v0)
-      ? { equal: true }
-      : { equal: false, path, reason: 'regex', regex: `/${reg.source}/`, str: v0 };
-    
-  }
-  
-  if (v1[0] === cmpFn) { // `v1` is `[ cmpFn, (val: any) => boolean ]`
+  // Validate using an arbitrary function: `[ cmpFn, (val: any) => boolean ]`
+  if (v1[0] === cmpFn) {
     
     const result: boolean = v1[1](v0);
     return result
@@ -207,7 +220,7 @@ export const testRunner = async <Inp = null>(inp: TestRunnerInp<Inp>) => {
       
     });
     
-    logger.log({ $$: 'result', completedTests: numRan, totalTests: cases.length });
+    logger.log({ $$: 'result', invokedTests: numRan, totalTests: cases.length, time: (new Date()).toISOString().split(/[T.]/)[1] });
     
   });
   
